@@ -3,7 +3,6 @@ use std::{
     io::{BufRead, BufReader},
     process::exit,
 };
-
 fn read_file(path: &str) -> Vec<Vec<i32>> {
     let file = match File::open(path) {
         Ok(file) => file,
@@ -83,8 +82,65 @@ fn part1(input: Vec<Vec<i32>>) -> i32 {
         })
         .count() as i32
 }
+
+fn is_safe(input: &[i32]) -> bool {
+    let mut is_ascending = true;
+    let mut is_descending = true;
+
+    for pair in input.windows(2) {
+        let level_difference = pair[0] - pair[1];
+
+        // Constraint: Level difference should be between 1 and 3 inclusive
+        if level_difference.abs() < 1 || level_difference.abs() > 3 {
+            return false;
+        }
+
+        // Check ascending/descending trends
+        match level_difference > 0 {
+            true => is_ascending = false,
+            false => is_descending = false,
+        }
+
+        // Break early if neither ascending nor descending
+        if !is_ascending && !is_descending {
+            return false;
+        }
+    }
+
+    true
+}
+
+fn part2(input: Vec<Vec<i32>>) -> i32 {
+    let mut count = 0;
+    for report in input {
+        if is_safe(&report) {
+            count += 1
+        } else {
+            for i in 0..report.len() {
+                let mut unsafe_report = report.clone();
+                unsafe_report.remove(i);
+                if is_safe(&unsafe_report) {
+                    count += 1;
+                    break;
+                }
+            }
+        }
+        println!("count: {count}");
+    }
+    count
+}
 fn main() {
     let path = "input.txt";
     let input = read_file(path);
-    println!("result: {}", part1(input));
+
+    let test_input = vec![
+        vec![7, 6, 4, 2, 1],
+        vec![1, 2, 7, 8, 9],
+        vec![9, 7, 6, 2, 1],
+        vec![1, 3, 2, 4, 5],
+        vec![8, 6, 4, 4, 1],
+        vec![1, 3, 6, 7, 9],
+    ];
+    //let t_input = vec![vec![1, 2, 3, -1, 5]];
+    println!("result: {}", part2(input));
 }
